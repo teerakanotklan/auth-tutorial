@@ -1,9 +1,13 @@
+import { Metadata } from "next";
+
 import { SigninForm } from "@/components/auth/signin-form";
-import React from "react";
 
-type Props = {};
+export const metadata: Metadata = {
+  title: "Sign in - NL Development",
+  description: "NL Development human resources management system",
+};
 
-const SigninPage = (props: Props) => {
+const SigninPage = () => {
   return <SigninForm />;
 };
 

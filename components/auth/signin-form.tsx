@@ -2,6 +2,7 @@
 
 import * as z from "zod";
 
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -16,10 +17,19 @@ import {
 } from "@/components/ui/form";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
+import { signin } from "@/actions/signin";
+
+const ACTIVE_INPUT = "border-[2px] focus-visible:border-blue-500";
 
 export const SigninForm = () => {
+  const [error, setError] = useState<any>("");
+  const [success, setSuccess] = useState<any>("");
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof SigninSchema>>({
     resolver: zodResolver(SigninSchema),
     defaultValues: {
@@ -29,14 +39,22 @@ export const SigninForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof SigninSchema>) => {
-    console.log(values);
+    setError("");
+    setSuccess("");
+
+    startTransition(() => {
+      signin(values).then((data) => {
+        setError(error);
+        setSuccess(success);
+      });
+    });
   };
 
   return (
     <CardWrapper
-      headerLabel="Welcome back to NLD"
+      headerLabel="Sign in to NLD"
       backButtonLabel="Don't have an account?"
-      backButtonHref="/auth/signup"
+      backButtonHref="/auth/register"
       showSocial
     >
       <Form {...form}>
@@ -47,9 +65,16 @@ export const SigninForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="font-normal text-foreground">
+                    Email address
+                  </FormLabel>
                   <FormControl>
-                    <Input {...field} type="email" />
+                    <Input
+                      {...field}
+                      disabled={isPending}
+                      type="email"
+                      className={ACTIVE_INPUT}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -60,17 +85,30 @@ export const SigninForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="font-normal text-foreground">
+                    Password
+                  </FormLabel>
                   <FormControl>
-                    <Input {...field} type="password" />
+                    <Input
+                      {...field}
+                      disabled={isPending}
+                      type="password"
+                      className={ACTIVE_INPUT}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button type="submit" className="w-full">
-            Login
+          <FormError message={error} />
+          <FormSuccess message={success} />
+          <Button
+            disabled={isPending}
+            type="submit"
+            className="w-full text-white bg-emerald-600 hover:bg-emerald-800"
+          >
+            Sign in
           </Button>
         </form>
       </Form>
